@@ -47,7 +47,7 @@ var server = net.createServer(function(client){
  * @param  {Function} errCallback    Callback if error
  * @return {function}                function
  */
-var query = (text, params, sucessCallback,errCallback) => {
+var singleQuery = (text, params, sucessCallback,errCallback) => {
 	const start = Date.now()
 	return client.query(text, params, (err, res) => {
 	  const duration = Date.now() - start
@@ -71,21 +71,104 @@ var query = (text, params, sucessCallback,errCallback) => {
  * Query Section
  */
 /**
+ * Order 생성
+ * @params product_cd,qty,status,order_date,name,description,order_id
+ *         productCd,qty,status,orderDate,name,description,orderId
+ *         $1,        $2, $3,    $4,        $5,  $6,         $7
+ * 호출 Sample : query(sqlInsertOrder, [productCd,qty,status,orderDate,name,description,orderId],
+ * 										 function(){},
+ * 										 funciton(){})
+ */
+var sqlInsertOrder = `INSERT INTO ORDERS(product_cd,qty,status,order_date,name,description,order_id) 
+                                  VALUES($1,        $2, $3,    $4,        $5,  $6,         $7) RETURNING id`;
+/**
  * Order 상태 update
  * @params $1 : orderId, $2 : status 
  * 호출 Sample : query(updateOrderStatus, [orderId,status],
  * 										 function(){},
  * 										 funciton(){})
  */
-var updateOrderStatus = "UPDATE ORDERS SET STATUS = $2 WHERE ORDER_ID = $1";
+var sqlUpdateOrderStatus = `UPDATE ORDERS SET STATUS = $2 WHERE ORDER_ID = $1`;
 
 /**
- * Order 상태 update
- * @params $1 : orderId, $2 : status 
+ * Running이 없는 경우 주문서 선택
  */
-var updateOrderStatus = "UPDATE ORDERS SET STATUS = $2 WHERE ORDER_ID = $1";
+var sqlSelectNextOrder = 
+     `SELECT * FROM ORDERS WHERE ORDER_ID IN (
+	   SELECT ORDER_ID FROM ORDERS 
+	   WHERE ID IN (
+		   SELECT MIN(ID) FROM ORDERS WHERE STATUS = 'FINISH'
+	   )
+	 );`;
 
+/**
+ * Running이 없는 경우 주문서 선택
+ */
+var sqlSelectRunningOrderExists = 
+     `SELECT COUNT(1)>0 FROM ORDERS WHERE STATUS = 'WORKING'`;
 
+var insertOrder = (orders) => {
+	;(async () => {
+		try {
+		    await client.query('BEGIN')
+			var orderCsv = orders.map(e => e.join(",")).join("\n");
+		    // const { rows } = await client.query(sqlInsertOrder, [productCd,qty,status,orderDate,name,description,orderId])
+		    orderCsv.forEach(function(order){
+		    	await client.query(sqlInsertOrder, order);
+		    });
+
+		    await selectNextOrder();
+		    await client.query('COMMIT')
+		} catch (e) {
+		    await client.query('ROLLBACK')
+		    throw e
+		} finally {
+			client.release()
+		}
+	})().catch(e => console.error(e.stack))
+};
+
+var updateOrderStatus = (status) => {
+	;(async () => {
+	    // const { rows } = await client.query(sqlInsertOrder, [productCd,qty,status,orderDate,name,description,orderId])
+		try {
+		    await client.query('BEGIN')
+	   		await client.query(sqlUpdateOrderStatus, status);
+		    await selectNextOrder();
+		    await client.query('COMMIT')
+		} catch (e) {
+		    await client.query('ROLLBACK')
+		    throw e
+		} finally {
+			client.release()
+		}
+	})().catch(e => console.error(e.stack))
+};
+
+var selectNextOrder = (orders) =>{
+	singleQuery(
+		sqlSelectNextOrder,
+		null,
+		function(){
+			//check if order already running
+			//if no
+			//send mqtt
+			//else do not thing
+		},
+		null);
+}
+
+var checkIfOrderWorking = (orders) =>{
+	var isExists = true;
+	singleQuery(
+		sqlSelectRunningOrderExists,
+		null,
+		function(){
+			isExists = false;
+		},
+		null);
+	return isExists;
+}
 
 server.listen(13766, function(){
     console.log('Server listening for connections');
