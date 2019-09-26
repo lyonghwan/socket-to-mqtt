@@ -1,0 +1,39 @@
+{
+   "BILL_NO" : "0035",
+   "POS_NO" : "01",
+   "PRODUCT" : [
+      {
+         "PROD_CD" : "000006",
+         "SALE_QTY" : "1"
+      },
+      {
+         "PROD_CD" : "000007",
+         "SALE_QTY" : "2"
+      },
+      {
+         "PROD_CD" : "000008",
+         "SALE_QTY" : "3"
+      },
+      {
+         "PROD_CD" : "000009",
+         "SALE_QTY" : "4"
+      },
+      {
+         "PROD_CD" : "000010",
+         "SALE_QTY" : "5"
+      },
+      {
+         "PROD_CD" : "000011",
+         "SALE_QTY" : "4"
+      },
+      {
+         "PROD_CD" : "000012",
+         "SALE_QTY" : "3"
+      },
+      {
+         "PROD_CD" : "000013",
+         "SALE_QTY" : "2"
+      }
+   ],
+   "SALE_DATE" : "20190922"
+}

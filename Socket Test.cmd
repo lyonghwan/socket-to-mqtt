@@ -1,0 +1,1 @@
+echo "$(cat JSONSample.txt)" | nc localhost 13766
