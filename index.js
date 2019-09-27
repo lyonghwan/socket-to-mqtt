@@ -50,8 +50,9 @@ var messageSwitch = () =>{
     mqttClient.subscribe(TOPIC_AGV,function(err){});
     mqttClient.subscribe(TOPIC_ROBOT,function(err){});
 	mqttClient.on('message',function(topic, message, packet) {
-		console.log(message.toString());
+		console.log(message);
 		var dataString = message.toString().replace(/(\r\n|\n|\r)/gm," ");
+		console.log(dataString);
 		try{
 			var data = JSON.parse(dataString);
 			switch (topic) {
