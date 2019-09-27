@@ -56,7 +56,7 @@ var messageSwitch = () =>{
 		var messageString = message.toString();
 		var lastIdx = messageString.lastIndexOf("}");
 		var firstIdx = messageString.indexOf("{");
-		var dataString = messageString.substring(firstIdx,(lastIdx-firstIdx)+2);
+		var dataString = messageString.substring(firstIdx,(lastIdx-firstIdx)+100);
 
 		console.log("===========replaced============");
 		console.log(dataString);
