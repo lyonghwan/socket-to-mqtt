@@ -53,7 +53,11 @@ var messageSwitch = () =>{
 		console.log("===========message============");
 		console.log(message);
 		console.log(message.toString());
-		var dataString = message.toString().replace(/(\r\n|\n|\r)/gm,"").replace('�',"");
+		var messageString = message.toString();
+		var lastIdx = messageString.lastIndexOf("}");
+		var firstIdx = messageString.indexOf("{");
+		var dataString = messageString.substring(firstIdx,(lastIdx-firstIdx)+2);
+
 		console.log("===========replaced============");
 		console.log(dataString);
 		try{
@@ -79,6 +83,9 @@ var messageSwitch = () =>{
 			console.error(e.stack)
 		}
 	});
+	mqttClient.on("error", (error) => { 
+	  console.log(e.stack);
+	})
 }
 
 messageSwitch();
