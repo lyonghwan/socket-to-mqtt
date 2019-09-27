@@ -18,6 +18,7 @@ var server = net.createServer(function(client){
 
 	try {
 	    client.on('data', function(data){
+	    	console.log(data);
 	    	console.log(data.toString());
 	        mqttClient.publish(TOPIC_ORDER_RECV, data);
 	    });
