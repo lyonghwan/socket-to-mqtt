@@ -2,10 +2,11 @@
 /**
  * Enviroments Section
  */
-var net = require('net');
 var mqtt = require('mqtt');
 var mqttClient  = mqtt.connect('mqtt://60.196.69.234:40001');
-var {Pool, Client } = require('pg');
+require('console-stamp')(console, { pattern: 'dd/mm/yyyy HH:MM:ss.l' });
+var {Pool} = require('pg');
+
 
 var TOPIC_ORDER_RECV = 'order/recv';
 var TOPIC_ORDER_SEND = 'order/send';
@@ -18,21 +19,6 @@ var ORDER_STATUS_WAIT = 'WAIT';
 var ORDER_STATUS_WORKING = 'WORKING'
 var ORDER_STATUS_FINISH = 'FINISH'
 
-// var app = require('express')();
-// var http = require('http').createServer(app)
-
-
-/**
- * DB Connnect
- * @type {pgClient}
- */
-// var client = new Client({
-//   host: '60.196.69.234',
-//   database: 'postgres',
-//   user: 'postgres',
-//   password: 'p@stgr#s',
-//   port: 40002,
-// })
 
 var pool = new Pool({
   host: '60.196.69.234',
@@ -56,23 +42,6 @@ var PRODUCT_MAP = {
 	"000010":"2000010"
 }
 // var client = pool.connect()
-
-/**
- * from Socket Server to Mqtt
- * @param  {}
- * @return {[type]}           [description]
- */
-var server = net.createServer(function(client){
-    client.on('data', function(data){
-        mqttClient.publish(TOPIC_ORDER_RECV, data);
-    });
-    
-    client.on('end',function(){
-        console.log('Client disconnected');
-    });
-
-    client.write('Hello');
-});
 
 var messageSwitch = () =>{
 	mqttClient.on('connect', function () {});
@@ -298,10 +267,3 @@ var updateStockbyOrder = (orderId,status) => {
 var finishOrder = (order_id) =>{
 	updateStockbyOrder(order_id,ORDER_STATUS_FINISH);
 }
-/**
- * 주문완료 완료
- */
-
-server.listen(13766, function(){
-    console.log('Server listening for connections');
-});

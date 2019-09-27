@@ -4,7 +4,8 @@
   "description": "소켓을 받아서 MQTT로 변환하여 PUB SUB",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "stop:socket": "kill $(lsof -t -i:13766)"
   },
   "repository": {
     "type": "git",
@@ -17,6 +18,7 @@
   },
   "homepage": "https://github.com/lyonghwan/socket-to-mqtt#readme",
   "dependencies": {
+    "console-stamp": "^0.2.9",
     "express": "^4.15.2",
     "mqtt": "^3.0.0",
     "net": "^1.0.2",
