@@ -50,8 +50,10 @@ var messageSwitch = () =>{
     mqttClient.subscribe(TOPIC_AGV,function(err){});
     mqttClient.subscribe(TOPIC_ROBOT,function(err){});
 	mqttClient.on('message',function(topic, message, packet) {
+		console.log("===========message============");
 		console.log(message);
 		var dataString = message.toString().replace(/(\r\n|\n|\r)/gm,"").replace('�',"");
+		console.log("===========replaced============");
 		console.log(dataString);
 		try{
 			var data = JSON.parse(dataString);
@@ -119,8 +121,16 @@ var covertOrders = (data) => {
 		return obj;
 	});
 	var orders = [];
-	orders.push(result.find(order=>{return order.product_cd.startsWith("1")}));
-	orders.push(result.find(order=>{return order.product_cd.startsWith("2")}));
+	var firstProd = result.find(order=>{return order.product_cd.startsWith("1")});
+	var secondProd = result.find(order=>{return order.product_cd.startsWith("2")});
+
+	if(firstProd){
+		orders.push(firstProd)
+	}
+	if(secondProd){
+		orders.push(secondProd)
+	}
+
 	return orders;
 }
 
@@ -141,9 +151,11 @@ var insertOrders = (orders) => {
 		  .then(async client => {
 				try {
 				    await client.query('BEGIN')
-				    console.log('order',orders.length);
+				    
 				    orders.forEach(async (order)=>{
 				    	var arrOrder = json2array(order);
+				    	console.log("===========insert order============");
+				    	console.log(order);
 				    	await client.query(sqlInsertOrder, arrOrder);
 				    });
 				    await client.query('COMMIT')
