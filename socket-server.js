@@ -19,7 +19,7 @@ var server = net.createServer(function(client){
 	try {
 	    client.on('data', function(data){
 	    	console.log(data);
-	    	console.log(data.toString());
+	    	console.log(data.toString('hex'));
 	        mqttClient.publish(TOPIC_ORDER_RECV, data);
 	    });
 	    
