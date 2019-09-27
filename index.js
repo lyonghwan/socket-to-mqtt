@@ -104,7 +104,8 @@ var orderRecvProcess = (data) => {
 var covertOrders = (data) => {
 	var rows = data.PRODUCT;
 	//TODO: 제거 
-	data.BILL_NO = data.BILL_NO + d.getTime().toString();
+	var date = new Date();
+	data.BILL_NO = data.BILL_NO + date.getTime().toString();
 	var result= rows.map((row,index)=>{
 		var obj = {};
 		obj.product_cd = PRODUCT_MAP[row.PROD_CD];
