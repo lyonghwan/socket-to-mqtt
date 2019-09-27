@@ -52,6 +52,7 @@ var messageSwitch = () =>{
 	mqttClient.on('message',function(topic, message, packet) {
 		console.log("===========message============");
 		console.log(message);
+		console.log(message.toString());
 		var dataString = message.toString().replace(/(\r\n|\n|\r)/gm,"").replace('�',"");
 		console.log("===========replaced============");
 		console.log(dataString);
