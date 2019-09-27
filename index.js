@@ -51,10 +51,10 @@ var messageSwitch = () =>{
     mqttClient.subscribe(TOPIC_ROBOT,function(err){});
 	mqttClient.on('message',function(topic, message, packet) {
 		var dataString = message.toString();
+		console.log(dataString);
 		var data = JSON.parse(dataString);
 		switch (topic) {
 		  case TOPIC_ORDER_RECV:
-		  	// console.log(topic);
 		    orderRecvProcess(data);
 		    break;
 		  case TOPIC_ORDER_SEND:
