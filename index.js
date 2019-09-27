@@ -53,10 +53,10 @@ var messageSwitch = () =>{
 		console.log("===========message============");
 		console.log(message);
 		console.log(message.toString());
-		var messageString = message.toString();
+		var messageString = message.toString().replace(/(\r\n|\n|\r)/gm,"");
 		var lastIdx = messageString.lastIndexOf("}");
 		var firstIdx = messageString.indexOf("{");
-		var dataString = messageString.substring(firstIdx,(lastIdx-firstIdx)+100).replace(/(\r\n|\n|\r)/gm,"");
+		var dataString = messageString.substring(firstIdx,(lastIdx-firstIdx)+100).slice(0,-1);
 
 		console.log("===========replaced============");
 		console.log(dataString);
