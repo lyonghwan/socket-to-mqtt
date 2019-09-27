@@ -27,7 +27,7 @@ var server = net.createServer(function(client){
 	        console.log('Client disconnected');
 	    });
 
-		socket.on("error", function(){
+		client.on("error", function(){
 			console.log("Caught flash policy server socket error: ")
 			console.log(err.stack)
 		});
