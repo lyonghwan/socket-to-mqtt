@@ -10,14 +10,16 @@ var {Pool} = require('pg');
 
 var TOPIC_ORDER_RECV = 'order/recv';
 var TOPIC_ORDER_SEND = 'order/send';
+var TOPIC_ORDER_STATUS = 'order/status';
 var TOPIC_AGV = 'agv';
 var TOPIC_ROBOT = 'robot';
 var TOPIC_PLC = 'plc';
 
 
 var ORDER_STATUS_WAIT = 'WAIT';
-var ORDER_STATUS_WORKING = 'WORKING'
-var ORDER_STATUS_FINISH = 'FINISH'
+var ORDER_STATUS_WORKING = 'WORKING';
+var ORDER_STATUS_INSTRUCT = 'INSTRUCT';
+var ORDER_STATUS_FINISH = 'FINISH';
 
 
 var pool = new Pool({
@@ -50,31 +52,35 @@ var messageSwitch = () =>{
     mqttClient.subscribe(TOPIC_AGV,function(err){});
     mqttClient.subscribe(TOPIC_ROBOT,function(err){});
 	mqttClient.on('message',function(topic, message, packet) {
-		console.log("===========message============");
-		console.log(message);
-		console.log(message.toString());
-		var messageString = message.toString().replace(/(\r\n|\n|\r)/gm,"");
-		var lastIdx = messageString.lastIndexOf("}");
-		var firstIdx = messageString.indexOf("{");
-		var dataString = messageString.substring(firstIdx,(lastIdx-firstIdx)+100).slice(0,-1);
 
-		console.log("===========replaced============");
-		console.log(dataString);
 		try{
-			var data = JSON.parse(dataString);
 			switch (topic) {
 			  case TOPIC_ORDER_RECV:
+				console.log("===========message============");
+				console.log(message);
+				console.log(message.toString());
+				var messageString = message.toString().replace(/(\r\n|\n|\r)/gm,"");
+				var lastIdx = messageString.lastIndexOf("}");
+				var firstIdx = messageString.indexOf("{");
+				var dataString = messageString.substring(firstIdx,(lastIdx-firstIdx)+100).slice(0,-1);
+				var data = JSON.parse(dataString);
 			    orderRecvProcess(data);
 			    break;
 			  case TOPIC_ORDER_SEND:
-			    console.log(data);
+			    console.log(message.toString());
 			  	break;
 			  case TOPIC_AGV:
-			    // orderFinishProcess(data);
 			    break;
 			  case TOPIC_ROBOT:
 			  	break;
 			  case TOPIC_PLC:
+			    break;
+			  case TOPIC_ORDER_STATUS:
+			    if(data.status === ORDER_STATUS_WORKING){
+			    	updateOrderStatus(data.order_id, ORDER_STATUS_WORKING);
+			    }else if(data.status === ORDER_STATUS_FINISH){
+			    	finishOrder(data.order_id);
+			    }
 			    break;
 			  default :
 			    console.log(`Sorry, there's no topic to use`);
@@ -216,7 +222,7 @@ var sendNextOrder = () =>{
 					            			orderRobotType.command ="03";
 					            			orderRobotType.item1 = dataSet.find(order=>{return order.product_cd.startsWith("1")}).product_cd;
 					            			orderRobotType.item2 = dataSet.find(order=>{return order.product_cd.startsWith("2")}).product_cd;
-					            			updateOrderStatus(dataSet[0].order_id, ORDER_STATUS_WORKING);
+					            			updateOrderStatus(dataSet[0].order_id, ORDER_STATUS_INSTRUCT);
 					            			mqttClient.publish(TOPIC_ORDER_SEND, JSON.stringify(orderRobotType));
 					            		}
 					            	}
