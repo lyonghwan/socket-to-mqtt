@@ -57,7 +57,6 @@ var messageSwitch = () =>{
     mqttClient.subscribe(TOPIC_AGV,function(err){});
     mqttClient.subscribe(TOPIC_ROBOT,function(err){});
 	mqttClient.on('message',function(topic, message, packet) {
-		console.log(topic);
 		try{
 			switch (topic) {
 			  case TOPIC_ORDER_RECV:
@@ -122,9 +121,6 @@ var websocketSwitch = () =>{
     wsClient.subscribe(TOPIC_AGV,function(err){});
     wsClient.subscribe(TOPIC_ROBOT,function(err){});
 	wsClient.on('message',function(topic, message, packet) {
-		console.log("===========message============");
-		console.log(message);
-		console.log(message.toString());
 		var messageString = message.toString().replace(/(\r\n|\n|\r)/gm,"");
 	});
 	wsClient.on("error", (error) => { 
@@ -206,8 +202,6 @@ var insertOrders = (orders) => {
 				    
 				    orders.forEach(async (order)=>{
 				    	var arrOrder = json2array(order);
-				    	console.log("===========insert order============");
-				    	console.log(order);
 				    	await client.query(sqlInsertOrder, arrOrder);
 				    });
 				    await client.query('COMMIT')
