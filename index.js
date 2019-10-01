@@ -80,7 +80,7 @@ var messageSwitch = () =>{
 			    var messageString = message.toString().replace(/(\r\n|\n|\r)/gm,"");
 			    var data = JSON.parse(messageString);
 			    var robotAllData = data[ROTBOT_ALL_ID];
-			    if(robotAllData.type==='status') ROBOT_ALL_STATUS = robotAllData.value;
+			    if(robotAllData && robotAllData.type==='status') ROBOT_ALL_STATUS = robotAllData.value;
 
 			  	break;
 			  case TOPIC_PLC:
