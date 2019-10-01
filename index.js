@@ -4,7 +4,7 @@
  */
 var mqtt = require('mqtt');
 var mqttClient  = mqtt.connect('mqtt://60.196.69.234:40001');
-var wsClient  = mqtt.connect('ws://localhost:8083/mqtt');
+var wsClient  = mqtt.connect('ws://60.196.69.234:40003/mqtt');
 require('console-stamp')(console, { pattern: 'dd/mm/yyyy HH:MM:ss.l' });
 var {Pool} = require('pg');
 
@@ -21,6 +21,10 @@ var ORDER_STATUS_WAIT = 'WAIT';
 var ORDER_STATUS_WORKING = 'WORKING';
 var ORDER_STATUS_INSTRUCT = 'INSTRUCT';
 var ORDER_STATUS_FINISH = 'FINISH';
+
+var ROTBOT_ALL_ID ="ROBOT_ALL"
+var ROBOT_ALL_STATUS = 'NORMAL';
+var ROBOT_ALL_NORMAL_STATUS = 'NORMAL';
 
 
 var pool = new Pool({
@@ -73,6 +77,11 @@ var messageSwitch = () =>{
 			  case TOPIC_AGV:
 			    break;
 			  case TOPIC_ROBOT:
+			    var messageString = message.toString().replace(/(\r\n|\n|\r)/gm,"");
+			    var data = JSON.parse(messageString);
+			    var robotAllData = data[ROTBOT_ALL_ID];
+			    if(robotAllData.type==='status') ROBOT_ALL_STATUS = robotAllData.value;
+
 			  	break;
 			  case TOPIC_PLC:
 			    break;
@@ -224,36 +233,39 @@ var sqlSelectNextOrder =
 	 );`;
 
 var sendNextOrder = () =>{
-	;(async () => {
-		await pool
-		  .connect()
-		  .then(async client => {
-				try {
-					await client.query(sqlSelectNextOrder,null)
-					            .then(res => {
-					            	var dataSet = res.rows;
-					            	if(dataSet && dataSet.length>0){
-					            		if(dataSet[0].status===ORDER_STATUS_WAIT){
-					            			// {"ip":"192.168.0.10", ”r_type":”robot", ”type":”order” , ”command":”03”, ”item1":”1” , ”item2":”2”, ”item3":”3”}
-					            			var orderRobotType = {}
-					            			orderRobotType.ip="192.168.0.10"; //TODO: 확인필요
-					            			orderRobotType.r_type="robot";
-					            			orderRobotType.type ="order";
-					            			orderRobotType.command ="03";
-					            			orderRobotType.item1 = dataSet.find(order=>{return order.product_cd.startsWith("1")}).product_cd;
-					            			orderRobotType.item2 = dataSet.find(order=>{return order.product_cd.startsWith("2")}).product_cd;
-					            			updateOrderStatus(dataSet[0].order_id, ORDER_STATUS_INSTRUCT);
-					            			mqttClient.publish(TOPIC_ORDER_SEND, JSON.stringify(orderRobotType));
-					            		}
-					            	}
-							    })
-				} catch (e) {
-				    throw e
-				} finally {
-					client.release()
-				}
-		  })
-	})().catch(e => console.error(e.stack))
+	if(ROBOT_ALL_STATUS===ROBOT_ALL_NORMAL_STATUS){
+		;(async () => {
+			await pool
+			  .connect()
+			  .then(async client => {
+					try {
+						await client.query(sqlSelectNextOrder,null)
+						            .then(res => {
+						            	var dataSet = res.rows;
+						            	if(dataSet && dataSet.length>0){
+						            		if(dataSet[0].status===ORDER_STATUS_WAIT){
+						            			// {"ip":"192.168.0.10", ”r_type":”robot", ”type":”order” , ”command":”03”, ”item1":”1” , ”item2":”2”, ”item3":”3”}
+						            			var orderRobotType = {}
+						            			orderRobotType.ip="192.168.0.10"; //TODO: 확인필요
+						            			orderRobotType.order_id=dataSet[0].order_id; 
+						            			// orderRobotType.r_type="robot";
+						            			orderRobotType.type ="order";
+						            			orderRobotType.command ="00";
+						            			orderRobotType.item1 = dataSet.find(order=>{return order.product_cd.startsWith("1")}).product_cd;
+						            			orderRobotType.item2 = dataSet.find(order=>{return order.product_cd.startsWith("2")}).product_cd;
+						            			updateOrderStatus(dataSet[0].order_id, ORDER_STATUS_INSTRUCT);
+						            			mqttClient.publish(TOPIC_ORDER_SEND, JSON.stringify(orderRobotType));
+						            		}
+						            	}
+								    })
+					} catch (e) {
+					    throw e
+					} finally {
+						client.release()
+					}
+			  })
+		})().catch(e => console.error(e.stack))
+	}
 }
 
 /**
