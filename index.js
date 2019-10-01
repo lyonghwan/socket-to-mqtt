@@ -56,6 +56,7 @@ var messageSwitch = () =>{
     mqttClient.subscribe(TOPIC_ORDER_SEND,function(err){});
     mqttClient.subscribe(TOPIC_AGV,function(err){});
     mqttClient.subscribe(TOPIC_ROBOT,function(err){});
+    mqttClient.subscribe(TOPIC_ORDER_STATUS,function(err){});
 	mqttClient.on('message',function(topic, message, packet) {
 		try{
 			switch (topic) {
