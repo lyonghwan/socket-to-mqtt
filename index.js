@@ -61,7 +61,7 @@ var messageSwitch = () =>{
 		try{
 			switch (topic) {
 			  case TOPIC_ORDER_RECV:
-				console.log("===========message============");
+				console.log("===========order recv message============");
 				console.log(message);
 				console.log(message.toString());
 				var messageString = message.toString().replace(/(\r\n|\n|\r)/gm,"");
@@ -72,11 +72,17 @@ var messageSwitch = () =>{
 			    orderRecvProcess(data);
 			    break;
 			  case TOPIC_ORDER_SEND:
+			    console.log("===========order send message============");
 			    console.log(message.toString());
 			  	break;
 			  case TOPIC_AGV:
+			    console.log("===========agv recv message============");
+			    console.log(message.toString());
 			    break;
 			  case TOPIC_ROBOT:
+			    console.log("===========robot recv message============");
+			    console.log(message.toString());
+
 			    var messageString = message.toString().replace(/(\r\n|\n|\r)/gm,"");
 			    var data = JSON.parse(messageString);
 			    var robotAllData = data[ROTBOT_ALL_ID];
@@ -86,6 +92,8 @@ var messageSwitch = () =>{
 			  case TOPIC_PLC:
 			    break;
 			  case TOPIC_ORDER_STATUS:
+			    console.log("===========order status message============");
+			    console.log(message.toString());
 			    if(data.status === ORDER_STATUS_WORKING){
 			    	updateOrderStatus(data.order_id, ORDER_STATUS_WORKING);
 			    }else if(data.status === ORDER_STATUS_FINISH){
@@ -173,6 +181,7 @@ var covertOrders = (data) => {
 	if(secondProd){
 		orders.push(secondProd)
 	}
+
 
 	return orders;
 }
@@ -306,7 +315,7 @@ var updateOrderStatus = (orderId, status) => {
  * 재고 업데이트
  * @type {[type]}
  */
-var stockUpdate = `UPDATE STOCKS SET CURRENT_QTY= CURRENT_QTY-1, SALE_QTY=SALE_QTY+1 WHERE PRODUCT_CD IN (SELECT PRODUCT_CD FROM ORDERS WHERE ORDER_ID = $1)`;
+var stockUpdate = `UPDATE STOCKS SET CURRENT_QTY= CURRENT_QTY-1 WHERE PRODUCT_CD IN (SELECT PRODUCT_CD FROM ORDERS WHERE ORDER_ID = $1)`;
 
 var updateStockbyOrder = (orderId,status) => {
 	;(async () => {
