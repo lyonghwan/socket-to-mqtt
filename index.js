@@ -4,6 +4,7 @@
  */
 var mqtt = require('mqtt');
 var mqttClient  = mqtt.connect('mqtt://60.196.69.234:40001');
+var wsClient  = mqtt.connect('ws://localhost:8083/mqtt');
 require('console-stamp')(console, { pattern: 'dd/mm/yyyy HH:MM:ss.l' });
 var {Pool} = require('pg');
 
@@ -52,7 +53,7 @@ var messageSwitch = () =>{
     mqttClient.subscribe(TOPIC_AGV,function(err){});
     mqttClient.subscribe(TOPIC_ROBOT,function(err){});
 	mqttClient.on('message',function(topic, message, packet) {
-
+		console.log(topic);
 		try{
 			switch (topic) {
 			  case TOPIC_ORDER_RECV:
@@ -96,6 +97,25 @@ var messageSwitch = () =>{
 
 messageSwitch();
 
+
+var websocketSwitch = () =>{
+	wsClient.on('connect', function () {});
+    wsClient.subscribe(TOPIC_ORDER_RECV,function(err){});
+    wsClient.subscribe(TOPIC_ORDER_SEND,function(err){});
+    wsClient.subscribe(TOPIC_AGV,function(err){});
+    wsClient.subscribe(TOPIC_ROBOT,function(err){});
+	wsClient.on('message',function(topic, message, packet) {
+		console.log("===========message============");
+		console.log(message);
+		console.log(message.toString());
+		var messageString = message.toString().replace(/(\r\n|\n|\r)/gm,"");
+	});
+	wsClient.on("error", (error) => { 
+	  console.log(e.stack);
+	})
+}
+
+websocketSwitch();
 /**
  * 주문 수신 프로세스 시작
  */
