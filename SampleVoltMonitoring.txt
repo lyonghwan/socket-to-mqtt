@@ -1,0 +1,55 @@
+{
+  "motor1Speed":[
+     {
+      "time": "1",
+      "angularSpeed": 10
+     },
+     {
+      "time": "2",
+      "angularSpeed": 20
+     },
+     {
+      "time": "3",
+      "angularSpeed": 30
+     },
+     {
+      "time": "4",
+      "angularSpeed": 40
+     },
+     ...
+  ],
+  "motor1Torque":[
+     {
+      "time": "1",
+      "torque": 10
+     },
+     {
+      "time": "2",
+      "torque": 20
+     },
+     {
+      "time": "3",
+      "torque": 30
+     },
+     {
+      "time": "4",
+      "torque": 40
+     }
+     ...
+  ],
+  ...
+  "motor6Speed":[...],
+  "motor6Torque":[...],
+  "robot1":{
+    "status":"WAIT,WORKING,ERROR",
+    "operHour":"05:44:17",
+    "actHour":"04:44:17",
+    "idelHour":"01:00:00"
+  },
+  "robot2":{
+    "status":"WAIT,WORKING,ERROR",
+    "operHour":"05:44:17",
+    "actHour":"04:44:17"
+    "idelHour":"01:00:00"
+  }
+}

@@ -15,11 +15,14 @@ var TOPIC_ORDER_STATUS = 'order/status';
 var TOPIC_AGV = 'agv';
 var TOPIC_ROBOT = 'robot';
 var TOPIC_PLC = 'plc';
+var TOPIC_VOLT_JOB = 'volt/job';
+var TOPIC_VOLT_MONITOR = 'volt/monitoring';
 
 
 var ORDER_STATUS_WAIT = 'WAIT';
-var ORDER_STATUS_WORKING = 'WORKING';
 var ORDER_STATUS_INSTRUCT = 'INSTRUCT';
+var ORDER_STATUS_WORKING = 'WORKING';
+var ORDER_STATUS_DELIVERY = 'DELIVERY';
 var ORDER_STATUS_FINISH = 'FINISH';
 
 var ROTBOT_ALL_ID ="ROBOT_ALL"
@@ -57,6 +60,8 @@ var messageSwitch = () =>{
     mqttClient.subscribe(TOPIC_AGV,function(err){});
     mqttClient.subscribe(TOPIC_ROBOT,function(err){});
     mqttClient.subscribe(TOPIC_ORDER_STATUS,function(err){});
+    mqttClient.subscribe(TOPIC_VOLT_JOB,function(err){});
+    mqttClient.subscribe(TOPIC_VOLT_MONITOR,function(err){});
 	mqttClient.on('message',function(topic, message, packet) {
 		try{
 			switch (topic) {
@@ -74,6 +79,11 @@ var messageSwitch = () =>{
 			  case TOPIC_ORDER_SEND:
 			    console.log("===========order send message============");
 			    console.log(message.toString());
+			    if(message.toString()==="RESEND"){
+			    	reSendOrder();
+			    }else if(message.toString()==="RESET"){
+			    	resetData();
+			    }
 			  	break;
 			  case TOPIC_AGV:
 			    console.log("===========agv recv message============");
@@ -94,14 +104,22 @@ var messageSwitch = () =>{
 			  case TOPIC_ORDER_STATUS:
 			    console.log("===========order status message============");
 			    console.log(message.toString());
+			    var data = JSON.parse(message.toString());
+			    console.log(data.status)
 			    if(data.status === ORDER_STATUS_WORKING){
+			    	console.log(data.status)
 			    	updateOrderStatus(data.order_id, ORDER_STATUS_WORKING);
-			    }else if(data.status === ORDER_STATUS_FINISH){
+			    }else if(data.status === ORDER_STATUS_DELIVERY){
+			    	console.log(data.status)
 			    	finishOrder(data.order_id);
+			    }else if(data.status === ORDER_STATUS_FINISH){
+			    	console.log(data.status)
+			    	updateOrderStatus(data.order_id, ORDER_STATUS_FINISH);
 			    }
 			    break;
 			  default :
-			    console.log(`Sorry, there's no topic to use`);
+			    console.log("===========other message============");
+			    console.log(message.toString());
 			}
 		} catch (e) {
 			console.error(e.stack)
@@ -160,7 +178,8 @@ var covertOrders = (data) => {
 	var result= rows.map((row,index)=>{
 		var obj = {};
 		obj.product_cd = PRODUCT_MAP[row.PROD_CD];
-		obj.qty = row.SALE_QTY;
+		// obj.qty = row.SALE_QTY;
+		obj.qty = 1;
 		obj.status  = ORDER_STATUS_WAIT;
 		obj.order_date = data.SALE_DATE;
 		obj.name = row.PROD_CD;
@@ -232,12 +251,12 @@ var sqlSelectNextOrder =
      `SELECT * FROM ORDERS WHERE ORDER_ID IN (
 	   SELECT ORDER_ID FROM ORDERS 
 	   WHERE ID IN (
-		   SELECT MIN(ID) FROM ORDERS WHERE STATUS <> 'FINISH'
+		   SELECT MIN(ID) FROM ORDERS WHERE STATUS NOT IN ('FINISH','DELIVERY')
 	   )
-	 );`;
+	 ) order by id;`;
 
 var sendNextOrder = () =>{
-	if(ROBOT_ALL_STATUS===ROBOT_ALL_NORMAL_STATUS){
+	// if(ROBOT_ALL_STATUS===ROBOT_ALL_NORMAL_STATUS){
 		;(async () => {
 			await pool
 			  .connect()
@@ -250,7 +269,7 @@ var sendNextOrder = () =>{
 						            		if(dataSet[0].status===ORDER_STATUS_WAIT){
 						            			// {"ip":"192.168.0.10", ”r_type":”robot", ”type":”order” , ”command":”03”, ”item1":”1” , ”item2":”2”, ”item3":”3”}
 						            			var orderRobotType = {}
-						            			orderRobotType.ip="192.168.0.10"; //TODO: 확인필요
+						            			// orderRobotType.ip="192.168.0.10"; //TODO: 확인필요
 						            			orderRobotType.order_id=dataSet[0].order_id; 
 						            			// orderRobotType.r_type="robot";
 						            			orderRobotType.type ="order";
@@ -269,9 +288,67 @@ var sendNextOrder = () =>{
 					}
 			  })
 		})().catch(e => console.error(e.stack))
-	}
+	// }
 }
 
+/**
+ * WORKING이 없는 경우 주문서 선택
+ */
+var sqlInstructedOrder = 
+     `SELECT * FROM ORDERS WHERE status = 'INSTRUCT';`;
+
+var reSendOrder = () =>{
+	// if(ROBOT_ALL_STATUS===ROBOT_ALL_NORMAL_STATUS){
+		;(async () => {
+			await pool
+			  .connect()
+			  .then(async client => {
+					try {
+						await client.query(sqlInstructedOrder,null)
+						            .then(res => {
+						            	console.log(res.rows);
+						            	var dataSet = res.rows;
+				            			var orderRobotType = {}
+				            			orderRobotType.order_id=dataSet[0].order_id; 
+				            			orderRobotType.type ="order";
+				            			orderRobotType.command ="00";
+				            			orderRobotType.item1 = dataSet.find(order=>{return order.product_cd.startsWith("1")}).product_cd;
+				            			orderRobotType.item2 = dataSet.find(order=>{return order.product_cd.startsWith("2")}).product_cd;
+				            			mqttClient.publish(TOPIC_ORDER_SEND, JSON.stringify(orderRobotType));
+								    })
+					} catch (e) {
+					    throw e
+					} finally {
+						client.release()
+					}
+			  })
+		})().catch(e => console.error(e.stack))
+	// }
+}
+
+
+var sqlResetStock = `UPDATE STOCKS SET CURRENT_QTY= DEFUALT_QTY`;
+var sqlResetOrder = `DELETE FROM ORDERS`;
+
+var resetData = () => {
+	;(async () => {
+		await pool
+		  .connect()
+		  .then(async client => {
+				try {
+				    await client.query('BEGIN')
+				    await client.query(sqlResetOrder, null);
+			   		await client.query(sqlResetStock, null);
+				    await client.query('COMMIT')
+				} catch (e) {
+				    await client.query('ROLLBACK')
+				    throw e
+				} finally {
+					client.release()
+				}
+		  })
+	})().catch(e => console.error(e.stack))
+};
 /**
  * Order 상태 update
  * @params $1 : orderId, $2 : status 
@@ -310,7 +387,7 @@ var updateOrderStatus = (orderId, status) => {
  * 재고 업데이트
  * @type {[type]}
  */
-var stockUpdate = `UPDATE STOCKS SET CURRENT_QTY= CURRENT_QTY-1 WHERE PRODUCT_CD IN (SELECT PRODUCT_CD FROM ORDERS WHERE ORDER_ID = $1)`;
+var stockUpdate = `UPDATE STOCKS SET CURRENT_QTY= CURRENT_QTY-1 WHERE PRODUCT_CD IN (SELECT NAME FROM ORDERS WHERE ORDER_ID = $1)`;
 
 var updateStockbyOrder = (orderId,status) => {
 	;(async () => {
@@ -335,5 +412,5 @@ var updateStockbyOrder = (orderId,status) => {
 };
 
 var finishOrder = (order_id) =>{
-	updateStockbyOrder(order_id,ORDER_STATUS_FINISH);
+	updateStockbyOrder(order_id,ORDER_STATUS_DELIVERY);
 }

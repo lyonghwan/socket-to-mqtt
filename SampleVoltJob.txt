@@ -1,0 +1,33 @@
+{
+  "1": {
+    "core1": "FINISH",
+    "core2": "WORKING",
+    "core3": "WAIT",
+    "core4": "WAIT",
+    "core5": "WAIT",
+    "core6": "WAIT",
+    "count": "10",
+    "status": "WAIT,WORKING,ERROR",
+    "message": "Robot Detail Message!!!",
+  },
+  "2": {
+    "core1": "FINISH",
+    "core2": "WORKING",
+    "core3": "WAIT",
+    "core4": "WAIT",
+    "core5": "WAIT",
+    "core6": "WAIT",
+    "count": "10",
+    "status": "WAIT,WORKING,ERROR",
+    "message": "Robot Detail Message!!!",
+  },
+  "monitoringServerStatus":{
+  	"status": "ERROR,WAIT,WORKING"
+  },
+  "seqServerStatus":{
+  	"status": "ERROR,WAIT,WORKING"
+  },
+  "jobStartStop":{
+  	"status": "ERROR,WAIT,WORKING"
+  }
+}
