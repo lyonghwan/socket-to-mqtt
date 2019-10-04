@@ -69,21 +69,22 @@ var messageSwitch = () =>{
 				console.log("===========order recv message============");
 				console.log(message);
 				console.log(message.toString());
-				var messageString = message.toString().replace(/(\r\n|\n|\r)/gm,"");
-				var lastIdx = messageString.lastIndexOf("}");
-				var firstIdx = messageString.indexOf("{");
-				var dataString = messageString.substring(firstIdx,(lastIdx-firstIdx)+100).slice(0,-1);
-				var data = JSON.parse(dataString);
-			    orderRecvProcess(data);
-			    break;
-			  case TOPIC_ORDER_SEND:
-			    console.log("===========order send message============");
-			    console.log(message.toString());
 			    if(message.toString()==="RESEND"){
 			    	reSendOrder();
 			    }else if(message.toString()==="RESET"){
 			    	resetData();
+			    }else{
+					var messageString = message.toString().replace(/(\r\n|\n|\r)/gm,"");
+					var lastIdx = messageString.lastIndexOf("}");
+					var firstIdx = messageString.indexOf("{");
+					var dataString = messageString.substring(firstIdx,(lastIdx-firstIdx)+100).slice(0,-1);
+					var data = JSON.parse(dataString);
+				    orderRecvProcess(data);
 			    }
+			    break;
+			  case TOPIC_ORDER_SEND:
+			    console.log("===========order send message============");
+			    console.log(message.toString());
 			  	break;
 			  case TOPIC_AGV:
 			    console.log("===========agv recv message============");
