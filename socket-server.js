@@ -15,7 +15,9 @@ var TOPIC_ORDER_RECV = 'order/recv';
  * @return {[type]}           [description]
  */
 var server = net.createServer(function(client){
-
+    console.log('Client connection: ');
+    console.log('   local = %s:%s', client.localAddress, client.localPort);
+    console.log('   remote = %s:%s', client.remoteAddress, client.remotePort);
 	try {
 	    client.on('data', function(data){
 	    	console.log(data);
