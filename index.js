@@ -73,6 +73,8 @@ var messageSwitch = () =>{
 			    	reSendOrder();
 			    }else if(message.toString()==="RESET"){
 			    	resetData();
+			    }else if(message.toString()==="CLOSE"){
+			    	closeData();
 			    }else{
 					var messageString = message.toString().replace(/(\r\n|\n|\r)/gm,"");
 					var lastIdx = messageString.lastIndexOf("}");
@@ -168,6 +170,10 @@ var sqlInsertOrder = `INSERT INTO ORDERS(product_cd,qty,status,order_date,name,d
 var orderRecvProcess = (data) => {
 	// console.log(data.length);
 	var orders = covertOrders(data);
+	if(orders.length<2){
+		console.log("returned")
+		return;
+	}
 	insertOrders(orders)
 }
 
@@ -275,6 +281,7 @@ var sendNextOrder = () =>{
 						            			// orderRobotType.r_type="robot";
 						            			orderRobotType.type ="order";
 						            			orderRobotType.command ="00";
+						            			console.log(dataSet);
 						            			orderRobotType.item1 = dataSet.find(order=>{return order.product_cd.startsWith("1")}).product_cd;
 						            			orderRobotType.item2 = dataSet.find(order=>{return order.product_cd.startsWith("2")}).product_cd;
 						            			updateOrderStatus(dataSet[0].order_id, ORDER_STATUS_INSTRUCT);
@@ -350,6 +357,29 @@ var resetData = () => {
 		  })
 	})().catch(e => console.error(e.stack))
 };
+
+// var sqlResetStock = `UPDATE STOCKS SET CURRENT_QTY= DEFUALT_QTY`;
+// var sqlResetOrder = `UPDATE ORDERs SET Status = 'FINISH' FROM ORDERS`;
+
+// var closeData = () => {
+// 	;(async () => {
+// 		await pool
+// 		  .connect()
+// 		  .then(async client => {
+// 				try {
+// 				    await client.query('BEGIN')
+// 				    await client.query(sqlResetOrder, null);
+// 			   		await client.query(sqlResetStock, null);
+// 				    await client.query('COMMIT')
+// 				} catch (e) {
+// 				    await client.query('ROLLBACK')
+// 				    throw e
+// 				} finally {
+// 					client.release()
+// 				}
+// 		  })
+// 	})().catch(e => console.error(e.stack))
+// };
 /**
  * Order 상태 update
  * @params $1 : orderId, $2 : status 
