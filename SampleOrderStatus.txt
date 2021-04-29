@@ -1,5 +1,5 @@
-mosquitto_pub -h 60.196.69.234 -p 40001 -t 'order/status' -m '{"order_id":"00351569919329361","status":"WORKING"}'
+mosquitto_pub -h localhost -p 40001 -t 'order/status' -m '{"order_id":"00351569919329361","status":"WORKING"}'
 
-mosquitto_pub -h 60.196.69.234 -p 40001 -t 'order/status' -m '{"order_id":"00351569919340646","status":"DELIVERY"}'
+mosquitto_pub -h localhost -p 40001 -t 'order/status' -m '{"order_id":"00351569919340646","status":"DELIVERY"}'
 
-mosquitto_pub -h 60.196.69.234 -p 40001 -t 'order/status' -m '{"order_id":"00351569919329361","status":"FINISH"}'
+mosquitto_pub -h localhost -p 40001 -t 'order/status' -m '{"order_id":"00351569919329361","status":"FINISH"}'

@@ -3,8 +3,8 @@
  * Enviroments Section
  */
 var mqtt = require('mqtt');
-var mqttClient  = mqtt.connect('mqtt://60.196.69.234:40001');
-var wsClient  = mqtt.connect('ws://60.196.69.234:40003/mqtt');
+var mqttClient  = mqtt.connect('mqtt:/localhost:40001');
+var wsClient  = mqtt.connect('ws://localhost:40003/mqtt');
 require('console-stamp')(console, { pattern: 'dd/mm/yyyy HH:MM:ss.l' });
 var {Pool} = require('pg');
 
@@ -31,7 +31,7 @@ var ROBOT_ALL_NORMAL_STATUS = 'NORMAL';
 
 
 var pool = new Pool({
-  host: '60.196.69.234',
+  host: 'localhost',
   database: 'postgres',
   user: 'postgres',
   password: 'p@stgr#s',

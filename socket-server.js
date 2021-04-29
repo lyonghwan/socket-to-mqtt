@@ -5,7 +5,7 @@ var net = require('net');
 var mqtt = require('mqtt');
 require('console-stamp')(console, { pattern: 'dd/mm/yyyy HH:MM:ss.l' });
 
-var mqttClient  = mqtt.connect('mqtt://60.196.69.234:40001');
+var mqttClient  = mqtt.connect('mqtt://localhost:40001');
 
 var TOPIC_ORDER_RECV = 'order/recv';
 
@@ -22,7 +22,7 @@ var server = net.createServer(function(client){
 	    client.on('data', function(data){
 	    	console.log(data);
 	    	console.log(data.toString('hex'));
-	        mqttClient.publish(TOPIC_ORDER_RECV, data);
+	      // mqttClient.publish(TOPIC_ORDER_RECV, data);
 	    });
 	    
 	    client.on('end',function(){
