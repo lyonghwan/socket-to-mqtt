@@ -20,7 +20,7 @@
   "homepage": "https://github.com/lyonghwan/socket-to-mqtt#readme",
   "dependencies": {
     "console-stamp": "^0.2.9",
-    "express": "^4.15.2",
+    "express": "^4.17.3",
     "mqtt": "^3.0.0",
     "net": "^1.0.2",
     "pg": "^7.12.1",
